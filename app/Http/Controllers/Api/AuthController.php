@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -15,7 +16,6 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
             'phone' => 'nullable|string',
             'church' => 'nullable|string|max:255',
             'school_year' => 'nullable|string|max:255',
@@ -26,7 +26,7 @@ class AuthController extends Controller
             'favorite_hymn' => 'nullable|string|max:255',
             'hobby' => 'nullable|string|max:255',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation errors',
@@ -34,11 +34,14 @@ class AuthController extends Controller
                 'data' => $validator->errors(),
             ], 422);
         }
-    
+
+        // If no password provided, generate an internal random password so the DB field is populated.
+        $password = $request->filled('password') ? Hash::make($request->password) : Hash::make(Str::random(40));
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $password,
             'phone' => $request->phone,
             'church' => $request->church,
             'school_year' => $request->school_year,
@@ -49,9 +52,9 @@ class AuthController extends Controller
             'favorite_hymn' => $request->favorite_hymn,
             'hobby' => $request->hobby,
         ]);
-    
+
         $token = $user->createToken('auth_token')->plainTextToken;
-    
+
         return response()->json([
             'message' => 'User registered successfully',
             'status' => true,
@@ -61,7 +64,7 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
             ],
         ], 201);
-    }    
+    }
 
     public function login(Request $request)
     {
@@ -72,10 +75,10 @@ class AuthController extends Controller
                 'data' => null,
             ], 401);
         }
-    
+
         $user = User::where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
-    
+
         return response()->json([
             'message' => 'Login successful',
             'status' => true,
@@ -86,12 +89,12 @@ class AuthController extends Controller
             ],
         ], 200);
     }
-    
+
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-    
+
         return response()->json([
             'message' => 'Successfully logged out',
             'status' => true,
