@@ -16,7 +16,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            // Email removed from registration per request; will be null by default
             'phone' => 'nullable|string',
             'church' => 'nullable|string|max:255',
             'school_year' => 'nullable|string|max:255',
@@ -41,7 +41,8 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            // Do not store email on register; keep as null unless provided later via profile update
+            'email' => null,
             'password' => $password,
             'phone' => $request->phone,
             'church' => $request->church,
