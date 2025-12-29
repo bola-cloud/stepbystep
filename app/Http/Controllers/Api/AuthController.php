@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -87,6 +88,72 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ],
+        ], 200);
+    }
+
+    /**
+     * Return authenticated user's profile data
+     */
+    public function profile(Request $request)
+    {
+        return response()->json([
+            'message' => 'User profile',
+            'status' => true,
+            'data' => $request->user(),
+        ], 200);
+    }
+
+    /**
+     * Update authenticated user's profile data
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'email' => ['sometimes','required','string','email','max:255', Rule::unique('users')->ignore($user->id)],
+            'phone' => 'nullable|string',
+            'church' => 'nullable|string|max:255',
+            'school_year' => 'nullable|string|max:255',
+            'sponsor' => 'nullable|string|max:255',
+            'favorite_color' => 'nullable|string|max:255',
+            'favorite_program' => 'nullable|string|max:255',
+            'favorite_game' => 'nullable|string|max:255',
+            'favorite_hymn' => 'nullable|string|max:255',
+            'hobby' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation errors',
+                'status' => false,
+                'data' => $validator->errors(),
+            ], 422);
+        }
+
+        $updatable = [
+            'name','email','phone','church','school_year','sponsor',
+            'favorite_color','favorite_program','favorite_game','favorite_hymn','hobby'
+        ];
+
+        foreach ($updatable as $field) {
+            if ($request->has($field)) {
+                $user->$field = $request->$field;
+            }
+        }
+
+        // If password is provided (optional), update it
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated',
+            'status' => true,
+            'data' => $user,
         ], 200);
     }
 

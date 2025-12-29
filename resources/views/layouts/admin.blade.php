@@ -56,7 +56,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" >
     @stack('css')
-  	@livewireStyles
+  	{{-- @livewireStyles --}}
     <style>
         @media (max-width: 720px) {
             .card.p-5 {
@@ -188,7 +188,7 @@
             let sortableList = document.getElementById('sortable-list');
             let confirmButton = document.getElementById('confirm-order-btn');
             let updatedOrder = [];
-    
+
             // Ensure that the sortableList exists in the DOM
             if (sortableList) {
                 // Initialize SortableJS manually
@@ -198,18 +198,18 @@
                     onEnd: function (event) {
                         // Capture the new order
                         updatedOrder = Array.from(event.target.children).map((el, index) => el.getAttribute('wire:sortable.item'));
-    
+
                         // Show the confirm button
                         confirmButton.style.display = 'block';
                     }
                 });
             }
-    
+
             // Handle the confirm button click
             confirmButton.addEventListener('click', function () {
                 // Emit the Livewire event with the updated order
                 Livewire.emit('updateOrder', updatedOrder);
-    
+
                 // Hide the confirm button after order is confirmed
                 confirmButton.style.display = 'none';
             });
