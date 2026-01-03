@@ -114,7 +114,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'email' => ['sometimes','required','string','email','max:255', Rule::unique('users')->ignore($user->id)],
-            'phone' => ['nullable','string', Rule::unique('users','phone')->ignore($user->id)],
+            'phone' => ['sometimes','nullable','string', Rule::unique('users','phone')->ignore($user->id)],
             'church' => 'nullable|string|max:255',
             'school_year' => 'nullable|string|max:255',
             'sponsor' => 'nullable|string|max:255',
